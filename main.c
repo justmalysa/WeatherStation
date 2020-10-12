@@ -10,8 +10,12 @@
 #include "USART.h"
 #include "bme280.h"
 
+#define INTERVAL 20
 #define MAX_DIGITS_IN_INT_32 13 //this value contains the number of characters of the 32 bit number, 
 								//the end of line character, dot and number sign
+
+volatile int time = 0;
+volatile int mutex_io = 0;
 
 void number_to_string(int32_t number, char string[], uint8_t dec_point)
 {
@@ -72,13 +76,37 @@ void send_measurments(void)
 
 }
 
+void process_io(void)
+{   
+    if( (mutex_io ==0) && (time >= INTERVAL))
+    {
+       mutex_io = 1;
+       send_measurments();
+       time  = 0;
+       mutex_io = 0;
+    }
+ }
+
 int main(void)
 {
+    TIMSK1 |= (1 << TOIE1);
+
+    TCCR1B |= (1 << CS11);
+	sei();
+
     initUSART();
 	bme280_init();
 	
     while (1)
 	{
-		send_measurments();
+		process_io();
     }
+}
+
+ISR (TIMER1_OVF_vect)
+{
+	while(mutex_io == 1);
+	mutex_io = 1;
+	time++;
+	mutex_io = 0;
 }
