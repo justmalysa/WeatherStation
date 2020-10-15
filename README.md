@@ -3,3 +3,5 @@ This application simulates the operation of a weather station. It enables temper
 
 Link to YouTube video:
 https://www.youtube.com/watch?v=6gq7_PQsEQw&feature=youtu.be
+
+![](photo.jpg)
